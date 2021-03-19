@@ -79,6 +79,7 @@ def main():
         verbose=True,
     )
 
+    best_loss = float("inf")
     for epoch in range(config.EPOCHS):
         model.train()
         train_loss = engine.train(model, train_loader, optimizer)
@@ -95,6 +96,9 @@ def main():
         pprint(list(zip(valid_targets, captcha_preds))[:10])
 
         lr_scheduler.step(valid_loss.avg)
+        if valid_loss.avg < best_loss:
+            best_loss = valid_loss.avg
+            torch.save(model.state_dict(), "model.pt")
         
 
 
