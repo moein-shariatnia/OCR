@@ -11,3 +11,4 @@ NUM_WORKERS = 0
 DROPOUT = 0.2
 PATIENCE = 3
 FACTOR = 0.8
+MODE = "eval" # if set to eval, no training will happen

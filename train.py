@@ -79,27 +79,40 @@ def main():
         verbose=True,
     )
 
-    best_loss = float("inf")
-    for epoch in range(config.EPOCHS):
-        model.train()
-        train_loss = engine.train(model, train_loader, optimizer)
-        
+    if config.MODE == "train":
+        best_loss = float("inf")
+        for epoch in range(config.EPOCHS):
+            model.train()
+            _ = engine.train(model, train_loader, optimizer)
+            
+            model.eval()
+            with torch.no_grad():
+                valid_preds, valid_loss = engine.eval(model, valid_loader)
+
+            captcha_preds = []
+            for preds in valid_preds:
+                preds_ = decode_predictions(preds, label_enc)
+                captcha_preds.extend(preds_)
+            
+            print(f"Epoch: {epoch}")
+            pprint(list(zip(valid_targets, captcha_preds))[:10])
+
+            lr_scheduler.step(valid_loss.avg)
+            if valid_loss.avg < best_loss:
+                best_loss = valid_loss.avg
+                torch.save(model.state_dict(), "model.pt")
+    else:
+        model.load_state_dict(torch.load("./models/model.pt", map_location=config.DEVICE))
         model.eval()
         with torch.no_grad():
             valid_preds, valid_loss = engine.eval(model, valid_loader)
-
         captcha_preds = []
         for preds in valid_preds:
             preds_ = decode_predictions(preds, label_enc)
             captcha_preds.extend(preds_)
         
         pprint(list(zip(valid_targets, captcha_preds))[:10])
-
-        lr_scheduler.step(valid_loss.avg)
-        if valid_loss.avg < best_loss:
-            best_loss = valid_loss.avg
-            torch.save(model.state_dict(), "model.pt")
-        
+        return valid_loader, captcha_preds, valid_targets
 
 
 if __name__ == "__main__":
