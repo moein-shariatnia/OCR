@@ -3,15 +3,12 @@ import torch.nn as nn
 import torch.nn.functional as F
 
 
-def conv_relu_norm(in_channel, out_channels, kernel_size, stride, padding, relu=True, norm=True):
+def conv_relu_norm(
+    in_channel, out_channels, kernel_size, stride, padding, relu=True, norm=True
+):
     layers = [
         nn.Conv2d(
-            in_channel,
-            out_channels,
-            kernel_size,
-            stride,
-            padding,
-            bias=not norm,
+            in_channel, out_channels, kernel_size, stride, padding, bias=not norm,
         )
     ]
     if norm:
